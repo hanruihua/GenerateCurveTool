@@ -77,15 +77,16 @@ class curve_generator:
             u_list = [cos(p[2, 0]) for p in curve]
             y_list = [sin(p[2, 0]) for p in curve]
            
-            plt.quiver(path_x_list, path_y_list, u_list, y_list, color='k', scale=45, scale_units='height')
+            plt.quiver(path_x_list, path_y_list, u_list, y_list, color='k', scale=35, scale_units='height')
     
 
 if __name__ == '__main__':
 
     point1 = np.array([ [1], [5], [0]])
     point2 = np.array([ [5], [3], [0]])
+    point3 = np.array([ [6], [1], [3]])
 
-    point_list = [point1, point2]
+    point_list = [point1, point2, point3]
 
     cg = curve_generator(curve_style='dubins')
     curve = cg.generate_curve(point_list, 0.1, 2)
@@ -96,6 +97,4 @@ if __name__ == '__main__':
         distance = round(np.linalg.norm( curve[i+1][0:2] - curve[i][0:2] ), 2)
 
         print(distance)
-
-    
     plt.show()
