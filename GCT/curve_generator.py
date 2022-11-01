@@ -44,24 +44,33 @@ class curve_generator:
             pass
         
         if self.curve_style == 'dubins':
-            
+            # generate dubins curve
+
             for i in range(len(way_points) - 1):
                 start_point = way_points[i]
                 end_point = way_points[i+1]
                 single_curve = generate_dubins_path(start_point, end_point, min_radius, step_size)
                 curve = curve + single_curve[1:]
 
+        elif self.curve_style == 'reeds':
+            # generate reeds shepp curve
+            pass
+
         return curve
 
     def plot_curve(self, curve, style='-g', show_way_points=True, show_direction=False, range_x = [0, 10], range_y = [0, 10], **kwargs):
-        
+
+        fig, ax = plt.subplots()
+    
+        ax.set_aspect('equal')
+
         plt.xlim(range_x)
         plt.ylim(range_y)
 
         path_x_list = [p[0, 0] for p in curve]
         path_y_list = [p[1, 0] for p in curve]
 
-        line = plt.plot(path_x_list, path_y_list, style, **kwargs)
+        line = ax.plot(path_x_list, path_y_list, style, **kwargs)
 
         if show_way_points:
             px_list = [p[0, 0] for p in self.way_points]
@@ -70,23 +79,24 @@ class curve_generator:
             wu_list = [cos(p[2, 0]) for p in self.way_points]
             wy_list = [sin(p[2, 0]) for p in self.way_points]
            
-            plt.quiver(px_list, py_list, wu_list, wy_list, color='r', scale=20)
+            ax.quiver(px_list, py_list, wu_list, wy_list, color='r', scale=20)
 
         if show_direction:
 
             u_list = [cos(p[2, 0]) for p in curve]
             y_list = [sin(p[2, 0]) for p in curve]
            
-            plt.quiver(path_x_list, path_y_list, u_list, y_list, color='k', scale=35, scale_units='height')
+            ax.quiver(path_x_list, path_y_list, u_list, y_list, color='k', scale=35, scale_units='height')
     
 
 if __name__ == '__main__':
 
     point1 = np.array([ [1], [5], [0]])
     point2 = np.array([ [5], [3], [0]])
-    point3 = np.array([ [6], [1], [3]])
+    point3 = np.array([ [6], [5], [3]])
+    point4 = np.array([ [2], [8], [2]])
 
-    point_list = [point1, point2, point3]
+    point_list = [point1, point2, point3, point4]
 
     cg = curve_generator(curve_style='dubins')
     curve = cg.generate_curve(point_list, 0.1, 2)
@@ -97,4 +107,5 @@ if __name__ == '__main__':
         distance = round(np.linalg.norm( curve[i+1][0:2] - curve[i][0:2] ), 2)
 
         print(distance)
+
     plt.show()

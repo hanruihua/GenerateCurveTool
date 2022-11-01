@@ -1,10 +1,10 @@
-import numpy as np
-from math import pi, sin, cos, atan2, sqrt, acos, inf
-
 """
 code author: Han Ruihua
 reference: paper 'Classification of the Dubins set, 2001', github https://github.com/AndrewWalker/Dubins-Curves/blob/master/src/dubins.c
 """
+
+import numpy as np
+from math import pi, sin, cos, atan2, sqrt, acos, inf
 
 steer_dict = {'L': 1, 'R': -1, 'S': 0 }  # turn left right, straight 
 
@@ -18,11 +18,12 @@ def generate_dubins_path(start=np.zeros((3, 1)), end=np.ones((3, 1)), min_radius
         step_size: the distance between each point
     """
     alpha, beta, d = preprocess(start, end, min_radius)
-    admissible_path = [dubins_LSL, dubins_RSR, dubins_RSL, dubins_LSR, dubins_RLR, dubins_LRL]
+    admissible_path = [dubins_LSL, dubins_RSR, dubins_RSL, dubins_LSR, dubins_RLR, dubins_LRL] # the candidate curves
 
     min_length = inf
         
     for ap in admissible_path:
+        # find the shortest path
         t, p, q, mode = ap(alpha, beta, d)
 
         if t == None:
@@ -36,12 +37,13 @@ def generate_dubins_path(start=np.zeros((3, 1)), end=np.ones((3, 1)), min_radius
             sh_q = q
             sh_mode = mode
     
-    path_point_list = path_generate(start, sh_t, sh_p, sh_q, sh_mode, min_radius, step_size)
+    path_point_list = path_generate(start, sh_t, sh_p, sh_q, sh_mode, min_radius, step_size)  # generate the path points
 
     return path_point_list
 
 def preprocess(start, end, min_radius):
-        
+    # calculate the relative unit angle and distance
+
     assert start.shape == (3, 1) and end.shape == (3, 1)
 
     dis, radian = relative(start, end)
