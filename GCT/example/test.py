@@ -1,7 +1,7 @@
+import numpy as np
 
-a = ['a', 'b', 'c']
-b = [3, 10, 6]
-
-c = a[b.index(min(b))]
+a = np.array([[1], [2]])
+b = 3
+c = np.vstack((a, [b]))
 
 print(c)

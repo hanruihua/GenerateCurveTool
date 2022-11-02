@@ -25,7 +25,7 @@ from math import sqrt, atan2, sin, cos, pi, inf, asin, acos
 
 element = namedtuple('element','len steer gear') # steer 1,0,-1, gear 1,-1
 
-def generate_reeds_shepp(start=np.zeros((3, 1)), end=np.ones((3, 1)), min_radius=1, step_size=0.1, include_gear=False):
+def generate_reeds_shepp(start=np.zeros((3, 1)), end=np.ones((3, 1)), min_radius=1, step_size=0.1, include_gear=False, **kwargs):
 
     """
     Arguments:
@@ -35,11 +35,13 @@ def generate_reeds_shepp(start=np.zeros((3, 1)), end=np.ones((3, 1)), min_radius
         step_size: the distance between each point
     """
 
-    if isinstance(start_point, tuple):
-        start_point = np.array([start_point]).T
+    if isinstance(start, tuple):
+        start = np.array([start]).T
 
-    if isinstance(goal_point, tuple):
-        goal_point = np.array([goal_point]).T
+    if isinstance(end, tuple):
+        end = np.array([end]).T
+
+    assert start.shape == (3, 1) and end.shape == (3, 1)
 
     x, y, phi = preprocess(start, end, min_radius)
 
@@ -55,9 +57,10 @@ def generate_reeds_shepp(start=np.zeros((3, 1)), end=np.ones((3, 1)), min_radius
     L_min = min(total_L_list) 
     path_min = total_path_list[total_L_list.index(L_min)]
 
-    path_point_list = path_generate(start_point, path_min, min_radius, step_size, include_gear)
+    path_point_list = path_generate(start, path_min, min_radius, step_size, include_gear)
 
-    path_point_list.append(goal_point)
+    return path_point_list
+
 
 def preprocess(start, end, min_radius):
     # preprocess: get coordinates of end in the set of axis where start is (0,0,0) with unit distance
@@ -117,6 +120,10 @@ def symmetry_curve2(x, y, phi, path_formula2):
     return path_list, L_list
 
 def path_generate(start_point, path, min_radius, step_size, include_gear=False):
+
+    if include_gear and start_point.shape[0] == 3:
+        start_point = start_point = np.vstack((start_point, [path[0].gear]))
+
     path_point_list = [start_point]
     end_point = None
 
@@ -126,7 +133,7 @@ def path_generate(start_point, path, min_radius, step_size, include_gear=False):
 
     for i in range(len(path)):
         
-        path_list, end_point = element_sample(path[i], start_point, min_radius, step_size, include_gear)
+        path_list, end_point = element_sample(path[i], start_point[0:3], min_radius, step_size, include_gear)
 
         path_point_list = path_point_list + path_list
         start_point = end_point
@@ -135,32 +142,84 @@ def path_generate(start_point, path, min_radius, step_size, include_gear=False):
 
 def element_sample(element, start_point, min_radius, step_size, include_gear=False):
 
-    length = element.len * min_radius
-    
-    if include_gear:
-        if start_point.shape[0] < 4:
-            add_row = np.array([[element.gear]])
-            start_point = np.vstack((start_point, add_row))
-        else:
-            start_point[3, 0] = element.gear
-
+    real_length = element.len * min_radius
+            
     path_list = []
     cur_length = 0
 
-    while cur_length < length:   
-        
-        pre_length = cur_length + step_size
-
-        if cur_length <= length and pre_length > length:
-            step_size = length - cur_length
-
-        new_point = self.motion_acker_step(start_point, element.gear, element.steer, step_size, include_gear)
-
+    while cur_length <= real_length - step_size:   
         cur_length = cur_length + step_size
-        path_list.append(new_point)
-        start_point = new_point
+        next_pose = trans_pose(start_point[0:3], cur_length, element.steer, min_radius, element.gear, include_gear)
+        path_list.append(next_pose)
+    
+    end_pose = trans_pose(start_point[0:3], real_length, element.steer, min_radius, element.gear, include_gear)
 
-    return path_list, new_point
+    # add end pose
+    if np.linalg.norm(end_pose - path_list[-1]) <= 0.01:
+        path_list[-1] = end_pose
+    else:
+        path_list.append(end_pose)
+
+    return path_list, end_pose
+
+
+def trans_pose(start_pose, length, steer, min_radius, gear, include_gear=False):
+
+    assert start_pose.shape == (3, 1) 
+
+    cur_theta = start_pose[2, 0]
+    start_position = start_pose[0:2]
+    rot_theta = steer * gear * length / min_radius
+    
+    if rot_theta == 0:
+        trans_matrix = gear * length * np.array([ [cos(cur_theta)], [sin(cur_theta)], [0]])
+        end_pose = start_pose + trans_matrix
+
+    else:
+        center_theta = cur_theta + steer*pi/2
+        center_position = start_position + min_radius * np.array([ [cos(center_theta)], [sin(center_theta)]])
+        
+        rot_matrix = np.array([[cos(rot_theta), -sin(rot_theta)], [sin(rot_theta), cos(rot_theta)]])
+        end_position = center_position + rot_matrix @ (start_position - center_position)
+        end_theta = M(cur_theta + rot_theta)
+        end_pose = np.vstack((end_position, [end_theta]))
+
+    if include_gear:
+        end_pose = np.vstack((end_pose, [gear]))
+    
+    return end_pose
+
+
+# def motion_acker_step(start_point, gear, steer, step_size, include_gear=False):
+    
+#     cur_x = start_point[0, 0]
+#     cur_y = start_point[1, 0]
+#     cur_theta = start_point[2, 0]
+
+#     curvature = steer * 1/self.min_r
+    
+#     rot_theta = abs(steer) * step_size * curvature * gear
+#     trans_len = (1 - abs(steer)) * step_size * gear
+
+#     rot_matrix = np.array([[cos(rot_theta), -sin(rot_theta)], [sin(rot_theta), cos(rot_theta)]])
+#     trans_matrix = trans_len * np.array([[cos(cur_theta)], [sin(cur_theta)]]) 
+
+#     center_x = cur_x + cos(cur_theta + steer * pi/2) * self.min_r
+#     center_y = cur_y + sin(cur_theta + steer * pi/2) * self.min_r
+#     center = np.array([[center_x], [center_y]])
+
+#     if include_gear:
+#         new_state = np.zeros((4, 1))
+#         new_state[0:2] = rot_matrix @ (start_point[0:2] - center) + center + trans_matrix
+#         new_state[2, 0] = self.wraptopi(cur_theta + rot_theta)
+#         new_state[3, 0] = gear
+#     else:
+#         new_state = np.zeros((3, 1))
+#         new_state[0:2] = rot_matrix @ (start_point[0:2] - center) + center + trans_matrix
+#         new_state[2, 0] = self.wraptopi(cur_theta + rot_theta)
+    
+#     return new_state
+
 
 # trans to (-pi, pi)
 def M(theta):

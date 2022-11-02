@@ -8,7 +8,7 @@ from math import pi, sin, cos, atan2, sqrt, acos, inf
 
 steer_dict = {'L': 1, 'R': -1, 'S': 0 }  # turn left right, straight 
 
-def generate_dubins_path(start=np.zeros((3, 1)), end=np.ones((3, 1)), min_radius=1, step_size=0.1):
+def generate_dubins_path(start=np.zeros((3, 1)), end=np.ones((3, 1)), min_radius=1, step_size=0.1, **kwargs):
 
     """
     Arguments:
@@ -122,6 +122,7 @@ def trans_pose(start_pose, length, steer, min_radius):
     else:
         center_theta = cur_theta + steer*pi/2
         center_position = start_position + min_radius * np.array([ [cos(center_theta)], [sin(center_theta)]])
+
         rot_matrix = np.array([[cos(rot_theta), -sin(rot_theta)], [sin(rot_theta), cos(rot_theta)]])
         end_position = center_position + rot_matrix @ (start_position - center_position)
         end_theta = wraptopi(cur_theta + rot_theta)

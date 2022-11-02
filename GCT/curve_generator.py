@@ -1,6 +1,7 @@
 from tkinter import Scale
 import numpy as np
 from GCT.curve.dubins_path import generate_dubins_path
+from GCT.curve.reeds_shepp import generate_reeds_shepp
 import matplotlib.pyplot as plt
 from math import cos, sin
 
@@ -54,8 +55,12 @@ class curve_generator:
 
         elif self.curve_style == 'reeds':
             # generate reeds shepp curve
-            pass
-
+            for i in range(len(way_points) - 1):
+                start_point = way_points[i]
+                end_point = way_points[i+1]
+                single_curve = generate_reeds_shepp(start_point, end_point, min_radius, step_size, **kwargs)
+                curve = curve + single_curve[1:]
+            
         return curve
 
     def plot_curve(self, curve, style='-g', show_way_points=True, show_direction=False, range_x = [0, 10], range_y = [0, 10], **kwargs):
@@ -94,18 +99,18 @@ if __name__ == '__main__':
     point1 = np.array([ [1], [5], [0]])
     point2 = np.array([ [5], [3], [0]])
     point3 = np.array([ [6], [5], [3]])
-    point4 = np.array([ [2], [8], [2]])
+    point4 = np.array([ [2], [2], [2]])
 
     point_list = [point1, point2, point3, point4]
 
-    cg = curve_generator(curve_style='dubins')
-    curve = cg.generate_curve(point_list, 0.1, 2)
-    cg.plot_curve(curve, show_direction=True)
+    cg = curve_generator(curve_style='reeds')
+    curve = cg.generate_curve(point_list, 0.1, 5, include_gear=True)
+    cg.plot_curve(curve, show_direction=False)
 
-    for i in range(len(curve) - 1):
+    # for i in range(len(curve) - 1):
 
-        distance = round(np.linalg.norm( curve[i+1][0:2] - curve[i][0:2] ), 2)
+    #     distance = round(np.linalg.norm( curve[i+1][0:2] - curve[i][0:2] ), 2)
 
-        print(distance)
+    #     print(distance)
 
     plt.show()
