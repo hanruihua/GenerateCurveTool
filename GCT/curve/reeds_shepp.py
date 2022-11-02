@@ -155,10 +155,13 @@ def element_sample(element, start_point, min_radius, step_size, include_gear=Fal
     end_pose = trans_pose(start_point[0:3], real_length, element.steer, min_radius, element.gear, include_gear)
 
     # add end pose
-    if np.linalg.norm(end_pose - path_list[-1]) <= 0.01:
-        path_list[-1] = end_pose
-    else:
+    if len(path_list) == 0:
         path_list.append(end_pose)
+    else:
+        if np.linalg.norm(end_pose - path_list[-1]) <= 0.01:
+            path_list[-1] = end_pose
+        else:
+            path_list.append(end_pose)
 
     return path_list, end_pose
 
