@@ -157,10 +157,10 @@ if __name__ == '__main__':
     point3 = np.array([ [6], [5], [3]])
     point4 = np.array([ [2], [2], [2]])
 
-    point_list = [point1, point2, point3, point4]
-    # point_list = []
+    # point_list = [point1, point2, point3, point4]
+    point_list = []
 
-    cg = curve_generator(select_mode='mouse', curve_style='reeds')
+    cg = curve_generator(select_mode='mouse', curve_style='reeds', point_style='pose')
     # cg = curve_generator(select_mode='default', curve_style='dubins')
     curve = cg.generate_curve(point_list, 0.1, 2, include_gear=True)
 
