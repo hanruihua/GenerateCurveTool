@@ -62,6 +62,9 @@ class curve_generator:
                         curve = self.curve_from_waypoints(min_radius, step_size, **kwargs)
                         self.plot_curve(curve, show_way_points=False)
                         plt.pause(0.001)
+                
+                if event.key == 'escape':
+                    plt.close()
 
             self.fig.canvas.mpl_connect('button_press_event', self.onclick)
             self.fig.canvas.mpl_connect('key_press_event', on_press)
@@ -152,17 +155,17 @@ class curve_generator:
 
 if __name__ == '__main__':
 
-    point1 = np.array([ [1], [5], [0]])
-    point2 = np.array([ [5], [3], [0]])
-    point3 = np.array([ [6], [5], [3]])
-    point4 = np.array([ [2], [2], [2]])
+    # point1 = np.array([ [1], [5], [0]])
+    # point2 = np.array([ [5], [3], [0]])
+    # point3 = np.array([ [6], [5], [3]])
+    # point4 = np.array([ [2], [2], [2]])
 
     # point_list = [point1, point2, point3, point4]
     point_list = []
 
-    cg = curve_generator(select_mode='mouse', curve_style='reeds', point_style='pose')
-    # cg = curve_generator(select_mode='default', curve_style='dubins')
-    curve = cg.generate_curve(point_list, 0.1, 2, include_gear=True)
+    # cg = curve_generator(select_mode='mouse', curve_style='reeds', point_style='pose')
+    cg = curve_generator(select_mode='mouse', curve_style='dubins')
+    curve = cg.generate_curve(point_list, 0.1, 2, include_gear=False)
 
     # print(curve)
 
