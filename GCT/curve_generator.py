@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from math import cos, sin, atan2
 
 class curve_generator:
-    def __init__(self, select_mode='default', curve_style='line', point_style='pose', x_limit = [0, 10], y_limit=[0, 10]) -> None:
+    def __init__(self, select_mode='default', point_style='pose', x_limit = [0, 10], y_limit=[0, 10]) -> None:
         """
         # select_mode: mode of point selection
             # 'default', use the input point_list
@@ -14,17 +14,12 @@ class curve_generator:
                 -- left click to select points and vectors
                 -- key enter to generate the curve
         
-        # curve_style: 
-            # line: connect the points with line
-            # reeds: connect the points with reeds shepp path
-            # dubins: connect the points with dubins path
             
         # point_style
             # position: x,y 2 * 1 matrix
             # pose: x, y, theta, 3*1 matrix, include orientation
         """
         self.select_mode = select_mode
-        self.curve_style = curve_style
         self.point_style = point_style
 
         self.fig, self.ax = plt.subplots()
@@ -34,7 +29,7 @@ class curve_generator:
 
         self.cpl = [] # click point list
 
-    def generate_curve(self, way_points =[], step_size = 0.1, min_radius=1, **kwargs):
+    def generate_curve(self, curve_style='dubins', way_points =[], step_size = 0.1, min_radius=1, split_reverse=False, **kwargs):
         
         # way_points: The list of way points
         # step_size: distance between the sample points
@@ -43,11 +38,14 @@ class curve_generator:
         # curve: a list of points
 
         # curve_style: 
-        #   - dubins: dubins curve (point_style must be pose)
+            # - line: connect the points with line
+            # - reeds: connect the points with reeds shepp path
+            # - dubins: connect the points with dubins path
+
         self.way_points = way_points
 
         if self.select_mode == 'default':
-            return self.curve_from_waypoints(min_radius, step_size, **kwargs)
+            return self.curve_from_waypoints(curve_style, min_radius, step_size, **kwargs)
 
         elif self.select_mode == 'mouse':
             # generate reference path by mouse    
@@ -59,7 +57,7 @@ class curve_generator:
                         self.way_points = self.cpl
 
                     elif self.point_style == 'pose':
-                        curve = self.curve_from_waypoints(min_radius, step_size, **kwargs)
+                        curve = self.curve_from_waypoints(curve_style, min_radius, step_size, **kwargs)
                         self.plot_curve(curve, show_way_points=False)
                         plt.pause(0.001)
                 
@@ -70,15 +68,21 @@ class curve_generator:
             self.fig.canvas.mpl_connect('key_press_event', on_press)
             plt.show()
         
-        curve = self.curve_from_waypoints(min_radius, step_size, **kwargs)
+        curve = self.curve_from_waypoints(curve_style, min_radius, step_size, **kwargs)
+
+        if split_reverse and curve_style=='reeds':
+            pass
+
+
+
 
         return curve
 
-    def curve_from_waypoints(self, min_radius, step_size, **kwargs):
+    def curve_from_waypoints(self, curve_style, min_radius, step_size, **kwargs):
 
         curve = [ self.way_points[0] ]
 
-        if self.curve_style == 'dubins':
+        if curve_style == 'dubins':
             # generate dubins curve
             for i in range(len(self.way_points) - 1):
                 start_point = self.way_points[i]
@@ -86,13 +90,16 @@ class curve_generator:
                 single_curve = generate_dubins_path(start_point, end_point, min_radius, step_size)
                 curve = curve + single_curve[1:]
 
-        elif self.curve_style == 'reeds':
+        elif curve_style == 'reeds':
             # generate reeds shepp curve
             for i in range(len(self.way_points) - 1):
                 start_point = self.way_points[i]
                 end_point = self.way_points[i+1]
                 single_curve = generate_reeds_shepp(start_point, end_point, min_radius, step_size, **kwargs)
                 curve = curve + single_curve[1:] 
+
+        else:
+            print('wrong curve type')
 
         return curve
 
@@ -164,8 +171,8 @@ if __name__ == '__main__':
     point_list = []
 
     # cg = curve_generator(select_mode='mouse', curve_style='reeds', point_style='pose')
-    cg = curve_generator(select_mode='mouse', curve_style='dubins')
-    curve = cg.generate_curve(point_list, 0.1, 2, include_gear=False)
+    cg = curve_generator(select_mode='mouse', )
+    curve = cg.generate_curve('dubins', point_list, 0.1, 2, include_gear=False)
 
     # print(curve)
 
