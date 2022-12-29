@@ -22,14 +22,15 @@ class curve_generator:
         self.select_mode = select_mode
         self.point_style = point_style
 
-        self.fig, self.ax = plt.subplots()
-        self.ax.set_aspect('equal')
-        self.ax.set_xlim(x_limit)
-        self.ax.set_ylim(y_limit)
+        if select_mode == 'mouse':
+            self.fig, self.ax = plt.subplots()
+            self.ax.set_aspect('equal')
+            self.ax.set_xlim(x_limit)
+            self.ax.set_ylim(y_limit)
 
         self.cpl = [] # click point list
 
-    def generate_curve(self, curve_style='dubins', way_points =[], step_size = 0.1, min_radius=1, split_reverse=False, **kwargs):
+    def generate_curve(self, curve_style='dubins', way_points =[], step_size = 0.1, min_radius=1, include_gear=False, **kwargs):
         
         # way_points: The list of way points
         # step_size: distance between the sample points
@@ -45,7 +46,7 @@ class curve_generator:
         self.way_points = way_points
 
         if self.select_mode == 'default':
-            return self.curve_from_waypoints(curve_style, min_radius, step_size, **kwargs)
+            curve = self.curve_from_waypoints(curve_style, min_radius, step_size, include_gear, **kwargs)
 
         elif self.select_mode == 'mouse':
             # generate reference path by mouse    
@@ -57,7 +58,7 @@ class curve_generator:
                         self.way_points = self.cpl
 
                     elif self.point_style == 'pose':
-                        curve = self.curve_from_waypoints(curve_style, min_radius, step_size, **kwargs)
+                        curve = self.curve_from_waypoints(curve_style, min_radius, step_size, include_gear, **kwargs)
                         self.plot_curve(curve, show_way_points=False)
                         plt.pause(0.001)
                 
@@ -68,17 +69,11 @@ class curve_generator:
             self.fig.canvas.mpl_connect('key_press_event', on_press)
             plt.show()
         
-        curve = self.curve_from_waypoints(curve_style, min_radius, step_size, **kwargs)
-
-        if split_reverse and curve_style=='reeds':
-            pass
-
-
-
+        curve = self.curve_from_waypoints(curve_style, min_radius, step_size, include_gear, **kwargs)
 
         return curve
 
-    def curve_from_waypoints(self, curve_style, min_radius, step_size, **kwargs):
+    def curve_from_waypoints(self, curve_style, min_radius, step_size, include_gear, **kwargs):
 
         curve = [ self.way_points[0] ]
 
@@ -95,8 +90,11 @@ class curve_generator:
             for i in range(len(self.way_points) - 1):
                 start_point = self.way_points[i]
                 end_point = self.way_points[i+1]
-                single_curve = generate_reeds_shepp(start_point, end_point, min_radius, step_size, **kwargs)
+                single_curve = generate_reeds_shepp(start_point, end_point, min_radius, step_size, include_gear, **kwargs)
                 curve = curve + single_curve[1:] 
+
+            if include_gear and curve[0].shape[0] == 3:
+                curve[0] = np.vstack((curve[0], [curve[1][-1, 0]]))
 
         else:
             print('wrong curve type')
