@@ -22,15 +22,14 @@ class curve_generator:
         self.select_mode = select_mode
         self.point_style = point_style
 
-        if select_mode == 'mouse':
-            self.fig, self.ax = plt.subplots()
-            self.ax.set_aspect('equal')
-            self.ax.set_xlim(x_limit)
-            self.ax.set_ylim(y_limit)
+        self.fig, self.ax = plt.subplots()
+        self.ax.set_aspect('equal')
+        self.ax.set_xlim(x_limit)
+        self.ax.set_ylim(y_limit)
 
         self.cpl = [] # click point list
 
-    def generate_curve(self, curve_style='dubins', way_points =[], step_size = 0.1, min_radius=1, include_gear=False, **kwargs):
+    def generate_curve(self, curve_style='dubins', way_points=[], step_size = 0.1, min_radius=1, include_gear=False, **kwargs):
         
         # way_points: The list of way points
         # step_size: distance between the sample points
@@ -42,15 +41,22 @@ class curve_generator:
             # - line: connect the points with line
             # - reeds: connect the points with reeds shepp path
             # - dubins: connect the points with dubins path
+        
+        # include_gear: if True, the curve should include the gear flag (-1, 1) and the points should be the 4*1 matrix. Used for reeds shepp
 
         self.way_points = way_points
 
         if self.select_mode == 'default':
+
+            if len(way_points) == 0:
+                print('Error: No waypoints !')
+                return None
+
             curve = self.curve_from_waypoints(curve_style, min_radius, step_size, include_gear, **kwargs)
 
         elif self.select_mode == 'mouse':
             # generate reference path by mouse    
-            print('Using mouth to select the way point')
+            print('Left-slick to select the way point, Enter to generate the curve')
 
             def on_press(event):
                 if event.key == 'enter':
@@ -74,7 +80,7 @@ class curve_generator:
         return curve
 
     def curve_from_waypoints(self, curve_style, min_radius, step_size, include_gear, **kwargs):
-
+        
         curve = [ self.way_points[0] ]
 
         if curve_style == 'dubins':
@@ -96,6 +102,9 @@ class curve_generator:
             if include_gear and curve[0].shape[0] == 3:
                 curve[0] = np.vstack((curve[0], [curve[1][-1, 0]]))
 
+        elif curve_style == 'line':
+            curve = self.generate_line(step_size)
+            
         else:
             print('wrong curve type')
 
@@ -139,7 +148,7 @@ class curve_generator:
         path_x_list = [p[0, 0] for p in curve]
         path_y_list = [p[1, 0] for p in curve]
 
-        line = self.ax.plot(path_x_list, path_y_list, style, **kwargs)
+        self.ax.plot(path_x_list, path_y_list, style, **kwargs)
 
         if show_way_points:
             px_list = [p[0, 0] for p in self.way_points]
@@ -156,7 +165,18 @@ class curve_generator:
             y_list = [sin(p[2, 0]) for p in curve]
            
             self.ax.quiver(path_x_list, path_y_list, u_list, y_list, color='k', scale=35, scale_units='height')
+
+    def generate_line(self, step_size):
+
+        curve = [self.way_points[0]]
+
+        # if self.point_style: 
+
+        for i in range(self.way_points):
+            pass
+
     
+
 
 if __name__ == '__main__':
 
@@ -172,14 +192,8 @@ if __name__ == '__main__':
     cg = curve_generator(select_mode='mouse', )
     curve = cg.generate_curve('dubins', point_list, 0.1, 2, include_gear=False)
 
-    # print(curve)
+    if curve is not None:
+        cg.plot_curve(curve, show_direction=False)
 
-    cg.plot_curve(curve, show_direction=False)
-
-    # for i in range(len(curve) - 1):
-
-    #     distance = round(np.linalg.norm( curve[i+1][0:2] - curve[i][0:2] ), 2)
-
-    #     print(distance)
 
     plt.show()
