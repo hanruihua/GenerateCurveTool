@@ -17,6 +17,6 @@ if __name__ == '__main__':
 
     print(curve)
 
-    if curve is not None: cg.plot_curve(curve, show_direction=False)
+    if curve is not None: cg.plot_curve(curve)
 
     plt.show()
