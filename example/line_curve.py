@@ -15,8 +15,6 @@ if __name__ == '__main__':
 
     curve = cg.generate_curve('line', point_list, 0.1, 2)
 
-    print(curve)
-
     if curve is not None: cg.plot_curve(curve)
 
     plt.show()

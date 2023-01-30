@@ -15,8 +15,6 @@ if __name__ == '__main__':
 
     curve = cg.generate_curve('dubins', point_list, 0.1, 2)
 
-    print(curve)
-
     if curve is not None: cg.plot_curve(curve, show_direction=False)
 
     plt.show()

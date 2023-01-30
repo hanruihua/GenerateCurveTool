@@ -20,11 +20,15 @@ class curve_generator:
         """
         self.select_mode = select_mode
         self.point_style = point_style
+        
+        self.x_limit = x_limit
+        self.y_limit = y_limit
 
-        self.fig, self.ax = plt.subplots()
-        self.ax.set_aspect('equal')
-        self.ax.set_xlim(x_limit)
-        self.ax.set_ylim(y_limit)
+        if select_mode =='mouse':
+            self.fig, self.ax = plt.subplots()
+            self.ax.set_aspect('equal')
+            self.ax.set_xlim(x_limit)
+            self.ax.set_ylim(y_limit)
 
         self.cpl = [] # click point list
 
@@ -161,6 +165,12 @@ class curve_generator:
 
         # self.ax.set_xlim(range_x)
         # self.ax.set_ylim(range_y)
+
+        if self.select_mode =='default':
+            self.fig, self.ax = plt.subplots()
+            self.ax.set_aspect('equal')
+            self.ax.set_xlim(self.x_limit)
+            self.ax.set_ylim(self.y_limit) 
 
         path_x_list = [p[0, 0] for p in curve]
         path_y_list = [p[1, 0] for p in curve]
