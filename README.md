@@ -4,7 +4,7 @@ A tool of generating the common curves from way points for the robot path planni
 
 
 Dubins path  |   Reeds Shepp    |
-:-------------------------:|:-------------------------:|:-------------------------:
+:-------------------------:|:-------------------------:|
 ![](example/gif/dubins.gif)  | ![](example/gif/reeds_shepp.gif) 
 
 ## Prerequisite
