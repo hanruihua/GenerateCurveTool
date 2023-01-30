@@ -2,8 +2,14 @@
 
 A tool of generating the common curves from way points for the robot path planning, including dubins path, reeds shepp, etc.
 
+- Dubins path 
 <div align=center>
-<img src="example/gif/dubins.gif" width="300" height="300"/><img src="example/gif/reeds_shepp.gif" width="300" height="300"/>
+<img src="example/gif/dubins.gif" width="300" height="300"/>
+</div>
+
+Reeds Shepp:
+<div align=center>
+<img src="example/gif/reeds_shepp.gif" width="300" height="300"/>
 </div>
 
 ## Prerequisite
