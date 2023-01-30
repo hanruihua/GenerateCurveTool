@@ -14,7 +14,6 @@ class curve_generator:
                 -- left click to select points and vectors
                 -- key enter to generate the curve
         
-            
         # point_style
             # position: x,y 2 * 1 matrix
             # pose: x, y, theta, 3*1 matrix, include orientation
@@ -45,6 +44,14 @@ class curve_generator:
         # include_gear: if True, the curve should include the gear flag (-1, 1) and the points should be the 4*1 matrix. Used for reeds shepp
 
         self.way_points = way_points
+        self.pnum = len(self.way_points)
+
+        if len(way_points) != 0: 
+            self.pdim = self.way_points[0].shape
+        elif self.point_style == 'position':
+            self.pdim = (2, 1)
+        elif self.point_style == 'pose':
+            self.pdim = (3, 1)
 
         if self.select_mode == 'default':
 
@@ -60,8 +67,12 @@ class curve_generator:
 
             def on_press(event):
                 if event.key == 'enter':
+                    
+                    print('press enter, generate curves')
+
                     if self.point_style == 'position':
                         self.way_points = self.cpl
+                        self.pnum = len(self.way_points)
 
                     elif self.point_style == 'pose':
                         curve = self.curve_from_waypoints(curve_style, min_radius, step_size, include_gear, **kwargs)
@@ -85,7 +96,7 @@ class curve_generator:
 
         if curve_style == 'dubins':
             # generate dubins curve
-            for i in range(len(self.way_points) - 1):
+            for i in range(self.pnum - 1):
                 start_point = self.way_points[i]
                 end_point = self.way_points[i+1]
                 single_curve = generate_dubins_path(start_point, end_point, min_radius, step_size)
@@ -93,18 +104,23 @@ class curve_generator:
 
         elif curve_style == 'reeds':
             # generate reeds shepp curve
-            for i in range(len(self.way_points) - 1):
+            for i in range(self.pnum - 1):
                 start_point = self.way_points[i]
                 end_point = self.way_points[i+1]
                 single_curve = generate_reeds_shepp(start_point, end_point, min_radius, step_size, include_gear, **kwargs)
                 curve = curve + single_curve[1:] 
 
-            if include_gear and curve[0].shape[0] == 3:
+            if include_gear and self.pdim[0] == 3:
                 curve[0] = np.vstack((curve[0], [curve[1][-1, 0]]))
 
         elif curve_style == 'line':
-            curve = self.generate_line(step_size)
             
+            for i in range(self.pnum - 1):
+                start_point = self.way_points[i]
+                end_point = self.way_points[i+1]
+                single_curve = self.generate_line(start_point, end_point, step_size)
+                curve = curve + single_curve[1:]
+
         else:
             print('wrong curve type')
 
@@ -134,6 +150,7 @@ class curve_generator:
 
                 way_point = np.vstack((self.cpl[0], [theta]))
                 self.way_points.append(way_point)
+                self.pnum = len(self.way_points)
 
                 self.cpl = []
 
@@ -151,49 +168,53 @@ class curve_generator:
         self.ax.plot(path_x_list, path_y_list, style, **kwargs)
 
         if show_way_points:
+
             px_list = [p[0, 0] for p in self.way_points]
             py_list = [p[1, 0] for p in self.way_points]
+            
+            if self.pdim[0] > 2:
+                wu_list = [cos(p[2, 0]) for p in self.way_points]
+                wy_list = [sin(p[2, 0]) for p in self.way_points]
+                self.ax.quiver(px_list, py_list, wu_list, wy_list, color='r', scale=20)
 
-            wu_list = [cos(p[2, 0]) for p in self.way_points]
-            wy_list = [sin(p[2, 0]) for p in self.way_points]
-           
-            self.ax.quiver(px_list, py_list, wu_list, wy_list, color='r', scale=20)
+            else:
+                self.ax.scatter(px_list, py_list, c='k')
 
         if show_direction:
+            if self.way_points[0] > 2:
+                u_list = [cos(p[2, 0]) for p in curve]
+                y_list = [sin(p[2, 0]) for p in curve]
+                self.ax.quiver(path_x_list, path_y_list, u_list, y_list, color='k', scale=35, scale_units='height')
 
-            u_list = [cos(p[2, 0]) for p in curve]
-            y_list = [sin(p[2, 0]) for p in curve]
-           
-            self.ax.quiver(path_x_list, path_y_list, u_list, y_list, color='k', scale=35, scale_units='height')
+            else:
+                print('No direction for 2D way points')
 
-    def generate_line(self, step_size):
+    def generate_line(self, start_point, end_point, step_size):
 
-        curve = [self.way_points[0]]
+        single_curve = [start_point]
+        cur_len = 0
+        
+        diff = end_point - start_point
+        length = np.linalg.norm(diff)
+        direction = diff / length
 
-        # if self.point_style: 
+        while cur_len <= length:
+            cur_len += step_size
+            new_point = start_point + cur_len * direction
+            single_curve.append(new_point)
+            
+        single_curve.append(end_point)
 
-        for i in range(self.way_points):
-            pass
-
-    
-
+        return single_curve
 
 if __name__ == '__main__':
 
-    # point1 = np.array([ [1], [5], [0]])
-    # point2 = np.array([ [5], [3], [0]])
-    # point3 = np.array([ [6], [5], [3]])
-    # point4 = np.array([ [2], [2], [2]])
-
-    # point_list = [point1, point2, point3, point4]
     point_list = []
 
-    # cg = curve_generator(select_mode='mouse', curve_style='reeds', point_style='pose')
     cg = curve_generator(select_mode='mouse', )
     curve = cg.generate_curve('dubins', point_list, 0.1, 2, include_gear=False)
 
     if curve is not None:
         cg.plot_curve(curve, show_direction=False)
-
 
     plt.show()
