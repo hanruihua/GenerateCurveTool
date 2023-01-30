@@ -2,10 +2,9 @@
 
 A tool of generating the common curves from way points for the robot path planning, including dubins path, reeds shepp, etc.
 
-![](example/gif/dubins.gif)
 
-![](example/gif/reeds_shepp.gif)
-
+<img src="example/gif/dubins.gif" width="300" height="300"/>
+<img src="example/gif/reeds_shepp.gif" width="300" height="300"/>
 
 ## Prerequisite
 
@@ -34,6 +33,6 @@ The examples are in [GenerateCurveTool/example/](https://github.com/hanruihua/Ge
 
 ## Author
 
-Han Ruihua
+Han Ruihua  
 Contact: hanrh@connect.hku.hk
 
