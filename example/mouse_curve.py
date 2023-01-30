@@ -8,7 +8,7 @@ if __name__ == '__main__':
 
     cg = curve_generator(select_mode='mouse')
 
-    curve = cg.generate_curve('dubins', point_list, 0.1, 2)
+    curve = cg.generate_curve('dubins', point_list, 0.1, 1)
 
     if curve is not None: cg.plot_curve(curve, show_direction=False)
 
