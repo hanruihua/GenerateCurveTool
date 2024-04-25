@@ -1,7 +1,7 @@
 from tkinter import Scale
 import numpy as np
-from GCT.curve.dubins_path import generate_dubins_path
-from GCT.curve.reeds_shepp import generate_reeds_shepp
+from gctl.curve.dubins_path import generate_dubins_path
+from gctl.curve.reeds_shepp import generate_reeds_shepp
 import matplotlib.pyplot as plt
 from math import cos, sin, atan2
 

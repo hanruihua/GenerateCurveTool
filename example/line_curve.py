@@ -1,4 +1,4 @@
-from GCT.curve_generator import curve_generator
+from gctl.curve_generator import curve_generator
 import matplotlib.pyplot as plt
 import numpy as np
 
