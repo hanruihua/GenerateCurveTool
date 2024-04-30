@@ -45,7 +45,7 @@ class curve_generator:
             # - reeds: connect the points with reeds shepp path
             # - dubins: connect the points with dubins path
         
-        # include_gear: if True, the curve should include the gear flag (-1, 1) and the points should be the 4*1 matrix. Used for reeds shepp
+        # include_gear: if True, the curve should include the gear flag (-1, 1) and the points should be the 4*1 matrix.
 
         self.way_points = way_points
         self.pnum = len(self.way_points)
@@ -103,7 +103,7 @@ class curve_generator:
             for i in range(self.pnum - 1):
                 start_point = self.way_points[i]
                 end_point = self.way_points[i+1]
-                single_curve = generate_dubins_path(start_point, end_point, min_radius, step_size)
+                single_curve = generate_dubins_path(start_point, end_point, min_radius, step_size, include_gear)
                 curve = curve + single_curve[1:]
 
         elif curve_style == 'reeds':

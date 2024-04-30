@@ -8,7 +8,7 @@ from math import pi, sin, cos, atan2, sqrt, acos, inf
 
 steer_dict = {'L': 1, 'R': -1, 'S': 0 }  # turn left right, straight 
 
-def generate_dubins_path(start=np.zeros((3, 1)), end=np.ones((3, 1)), min_radius=1, step_size=0.1, **kwargs):
+def generate_dubins_path(start=np.zeros((3, 1)), end=np.ones((3, 1)), min_radius=1, step_size=0.1, include_gear=False, **kwargs):
 
     """
     Arguments:
@@ -38,6 +38,9 @@ def generate_dubins_path(start=np.zeros((3, 1)), end=np.ones((3, 1)), min_radius
             sh_mode = mode
     
     path_point_list = path_generate(start, sh_t, sh_p, sh_q, sh_mode, min_radius, step_size)  # generate the path points
+
+    if include_gear:
+        path_point_list = [np.vstack((point, [1])) for point in path_point_list]
 
     return path_point_list
 
