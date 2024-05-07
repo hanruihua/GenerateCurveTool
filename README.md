@@ -18,9 +18,10 @@ Dubins path  |   Reeds Shepp    |
 
 You can simply install the package by pip:
 
-'''
+```
 pip install gctl
-'''
+```
+
 or install the development version by following command:
 
 ```
