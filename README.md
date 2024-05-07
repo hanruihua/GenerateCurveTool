@@ -15,6 +15,14 @@ Dubins path  |   Reeds Shepp    |
 
 ## Installation
 
+
+You can simply install the package by pip:
+
+'''
+pip install gctl
+'''
+or install the development version by following command:
+
 ```
 git clone https://github.com/hanruihua/GenerateCurveTool  
 cd GenerateCurveTool  
