@@ -17,6 +17,8 @@ class curve_generator:
         # point_style
             # position: x,y 2 * 1 matrix
             # pose: x, y, theta, 3*1 matrix, include orientation
+
+        gear flag: -1, 1, backward, forward
         """
         self.select_mode = select_mode
         self.point_style = point_style
@@ -97,6 +99,9 @@ class curve_generator:
     def curve_from_waypoints(self, curve_style, min_radius, step_size, include_gear, **kwargs):
         
         curve = [ self.way_points[0] ]
+
+        if include_gear and self.pdim[0] == 3:
+            curve[0] = np.vstack((curve[0], [1]))
 
         if curve_style == 'dubins':
             # generate dubins curve
