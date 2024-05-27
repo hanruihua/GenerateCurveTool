@@ -130,7 +130,7 @@ class curve_generator:
             for i in range(self.pnum - 1):
                 start_point = self.way_points[i]
                 end_point = self.way_points[i+1]
-                single_curve = self.generate_line(start_point, end_point, step_size)
+                single_curve = self.generate_line(start_point, end_point, step_size, include_gear)
                 curve = curve + single_curve[1:]
 
         else:
@@ -207,23 +207,36 @@ class curve_generator:
             else:
                 print('No direction for 2D way points')
 
-    def generate_line(self, start_point, end_point, step_size):
+    def generate_line(self, start_point, end_point, step_size, include_gear=False):
+
+        assert start_point.shape[0] >= 3 
 
         single_curve = [start_point]
         cur_len = 0
         
-        diff = end_point - start_point
+        diff = end_point[0:2] - start_point[0:2]
         length = np.linalg.norm(diff)
         direction = diff / length
+        theta = atan2(diff[1, 0], diff[0, 0])
 
-        while cur_len <= length:
+        while (cur_len + step_size) < length:
+
             cur_len += step_size
-            new_point = start_point + cur_len * direction
+            new_point = start_point[0:2] + cur_len * direction
+            new_point = np.vstack((new_point, [theta]))
+
+            if include_gear:
+                new_point = np.vstack((new_point, [1]))
+
             single_curve.append(new_point)
-            
+        
+        if include_gear:
+            end_point = np.vstack((end_point, [1]))
+
         single_curve.append(end_point)
 
         return single_curve
+
 
 if __name__ == '__main__':
 
