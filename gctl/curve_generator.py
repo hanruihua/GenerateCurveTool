@@ -108,8 +108,11 @@ class curve_generator:
             for i in range(self.pnum - 1):
                 start_point = self.way_points[i]
                 end_point = self.way_points[i+1]
-                single_curve = generate_dubins_path(start_point, end_point, min_radius, step_size, include_gear)
+                single_curve = generate_dubins_path(start_point, end_point, min_radius, step_size)
                 curve = curve + single_curve[1:]
+            
+            if include_gear:
+                curve = [np.vstack((point, [1])) for point in curve]
 
         elif curve_style == 'reeds':
             # generate reeds shepp curve
